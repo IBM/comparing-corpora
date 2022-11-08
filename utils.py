@@ -2,8 +2,33 @@ import numpy as np
 import operator
 from sklearn import linear_model
 from collections import Counter
-import torch
-from transformers import AutoModel, AutoTokenizer
+from typing import List, Union
+
+Corpus = Union[List[str], List[List[float]]]
+TCorpus = Union[List[str], List[List[str]]]
+
+
+def get_corpora_embeddings(corpus1, corpus2, model):
+    if isinstance(corpus1[0], str):
+        embeddings1 = model.embed_sentences(corpus1)
+    else:
+        embeddings1 = corpus1
+    if isinstance(corpus2[0], str):
+        embeddings2 = model.embed_sentences(corpus2)
+    else:
+        embeddings2 = corpus2
+    return embeddings1, embeddings2
+
+def get_corpora_tokens(corpus1:TCorpus, corpus2:TCorpus, model):
+    if isinstance(corpus1[0], str):
+        tokens1 = model.tokenize_sentences(corpus1)
+    else:
+        tokens1 = corpus1
+    if isinstance(corpus2[0], str):
+        tokens2 = model.tokenize_sentences(corpus2)
+    else:
+        tokens2 = corpus2
+    return tokens1, tokens2
 
 
 def zipf_coeff(samples, min_num=1, max_num=5000, stretch_factor=15):

@@ -1,5 +1,5 @@
 import corpus_metrics
-from TransformerTextEmbedder import TransformerTextEmbedder
+from TextTokenizerEmbedder import TextTokenizerEmbedder
 
 ### Example code
 
@@ -30,58 +30,59 @@ setB = ['how can i say thank you very much in chinese',
 		'how do you say hello in mexico'
 		]
 
-distance = corpus_metrics.chi_square_distance(sentences1=setA, sentences2=setB)
-print("distance={}".format(distance))
+distance = corpus_metrics.fid_distance(corpus1=setA, corpus2=setB)
+print("fid_distance={}".format(distance))
 
-distance = corpus_metrics.fid_distance(sentences1=setA, sentences2=setB)
-print("distance={}".format(distance))
+distance = corpus_metrics.dc_distance(corpus1=setA, corpus2=setB)
+print("dc_distance={}".format(distance))
 
-distance = corpus_metrics.dc_distance(sentences1=setA, sentences2=setB)
-print("distance={}".format(distance))
+distance = corpus_metrics.pr_distance(corpus1=setA, corpus2=setB)
+print("pr_distance={}".format(distance))
 
-distance = corpus_metrics.pr_distance(sentences1=setA, sentences2=setB)
-print("distance={}".format(distance))
+distance = corpus_metrics.mauve_distance(corpus1=setA, corpus2=setB)
+print("mauve_distance={}".format(distance))
 
-distance = corpus_metrics.mauve_distance(sentences1=setA, sentences2=setB)
-print("distance={}".format(distance))
 
-distance = corpus_metrics.zipf_distance(sentences1=setA, sentences2=setB)
-print("distance={}".format(distance))
+distance = corpus_metrics.medoid_distance(corpus1=setA, corpus2=setB)
+print("medoid_distance={}".format(distance))
 
-distance = corpus_metrics.medoid_distance(sentences1=setA, sentences2=setB)
-print("distance={}".format(distance))
+distance = corpus_metrics.ttest_distance(corpus1=setA, corpus2=setB)
+print("ttest_distance={}".format(distance))
 
-distance = corpus_metrics.ttest_distance(sentences1=setA, sentences2=setB)
-print("distance={}".format(distance))
+distance = corpus_metrics.chi_square_distance(corpus1=setA, corpus2=setB)
+print("chi_square_distance={}".format(distance))
 
-embedder = TransformerTextEmbedder()
+distance = corpus_metrics.zipf_distance(corpus1=setA, corpus2=setB)
+print("zipf_distance={}".format(distance))
+
+embedder = TextTokenizerEmbedder()
 embeddingA = embedder.embed_sentences(setA)
 embeddingB = embedder.embed_sentences(setB)
 
-distance = corpus_metrics.fid_distance(embeddings1=embeddingA, embeddings2=embeddingB)
+distance = corpus_metrics.fid_distance(corpus1=embeddingA, corpus2=embeddingB)
+print("fid_distance={}".format(distance))
+
+distance = corpus_metrics.dc_distance(corpus1=embeddingA, corpus2=embeddingB)
+print("dc_distance={}".format(distance))
+
+distance = corpus_metrics.pr_distance(corpus1=embeddingA, corpus2=embeddingB)
 print("distance={}".format(distance))
 
-distance = corpus_metrics.dc_distance(embeddings1=embeddingA, embeddings2=embeddingB)
+distance = corpus_metrics.mauve_distance(corpus1=embeddingA, corpus2=embeddingB)
+print("mauve_distance={}".format(distance))
+
+distance = corpus_metrics.medoid_distance(corpus1=embeddingA, corpus2=embeddingB)
+print("medoid_distance={}".format(distance))
+
+distance = corpus_metrics.ttest_distance(corpus1=embeddingA, corpus2=embeddingB)
 print("distance={}".format(distance))
 
-distance = corpus_metrics.pr_distance(embeddings1=embeddingA, embeddings2=embeddingB)
-print("distance={}".format(distance))
-
-distance = corpus_metrics.mauve_distance(embeddings1=embeddingA, embeddings2=embeddingB)
-print("distance={}".format(distance))
-
-distance = corpus_metrics.medoid_distance(embeddings1=embeddingA, embeddings2=embeddingB)
-print("distance={}".format(distance))
-
-distance = corpus_metrics.ttest_distance(embeddings1=embeddingA, embeddings2=embeddingB)
-print("distance={}".format(distance))
-
-embedder = TransformerTextEmbedder()
+embedder = TextTokenizerEmbedder()
 tokensA = embedder.tokenize_sentences(setA)
 tokensB = embedder.tokenize_sentences(setB)
 
-distance = corpus_metrics.chi_square_distance(tokens1=tokensA, tokens2=tokensB)
-print("distance={}".format(distance))
+distance = corpus_metrics.chi_square_distance(corpus1=tokensA, corpus2=tokensB)
+print("chi_square_distance={}".format(distance))
 
-distance = corpus_metrics.zipf_distance(tokens1=tokensA, tokens2=tokensB)
-print("distance={}".format(distance))
+distance = corpus_metrics.zipf_distance(corpus1=tokensA, corpus2=tokensB)
+print("zipf_distance={}".format(distance))

@@ -3,12 +3,12 @@ __author__ = 'gkour'
 import time
 from typing import List
 
-from TextEmbedder import TextEmbedder
+from TextEmbedder import TextEmbedder, TextTokenizer
 from sentence_transformers import SentenceTransformer
 from sklearn import preprocessing
 
 
-class TransformerTextEmbedder(TextEmbedder):
+class TextTokenizerEmbedder(TextEmbedder, TextTokenizer):
     def __init__(self, embedding_model_name="all-MiniLM-L6-v2"):
         self.model_name = embedding_model_name
         self.embedder: SentenceTransformer = None
@@ -16,18 +16,12 @@ class TransformerTextEmbedder(TextEmbedder):
 
     def _initialize_embedder(self):
         if self.embedder is None:
-            tick = time.time()
-            print("Started Loading embedding model...")
             self.embedder = SentenceTransformer(self.model_name)
-            print("Loading model {} took {} sec".format(self.model_name, time.time() - tick))
 
     def embed_sentences(self, sentences: List[str], normalize=False):
         self._initialize_embedder()
 
-        print("Started Embedding Sentences...")
-        tick = time.time()
-        vectors = self.embedder.encode(sentences, show_progress_bar=True)
-        print("Embedding Sentences took {} sec".format(time.time()-tick))
+        vectors = self.embedder.encode(sentences, show_progress_bar=False)
         vectors = preprocessing.normalize(vectors) if normalize else vectors
         return vectors
 
