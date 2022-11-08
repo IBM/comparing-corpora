@@ -1,5 +1,5 @@
 import corpus_metrics
-from TextTokenizerEmbedder import TextTokenizerEmbedder
+from text_tokenizer_embedder import TextTokenizerEmbedder
 
 ### Example code
 
