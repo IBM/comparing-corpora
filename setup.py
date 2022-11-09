@@ -27,11 +27,11 @@ with pathlib.Path('requirements.txt').open() as requirements_txt:
     ]
 
 setup(name='compcor',
-      version='1.0.0',
-      description='Bla bla',
-      #long_description=open("README.md").read(),
+      version='1.0.2',
+      description='A python library of similarity measures',
+      long_description=open("README.md").read(),
       long_description_content_type="text/markdown",
-      keywords='Bla bla',
+      keywords='Text DeepLearning Compare Corpus Metrics Measure Similarity',
       url='https://github.com/IBM/comparing-corpora',
       author='Language and Conversation team, Haifa lab, IBM Research AI',
       packages=find_packages('src', exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),

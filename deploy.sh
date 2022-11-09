@@ -1,2 +1,2 @@
 #!/bin/bash
-twine upload --repository local dist/*
+twine upload --repository testpypi --verbose dist/*
