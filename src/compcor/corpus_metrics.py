@@ -14,10 +14,10 @@ from scipy import spatial
 from sklearn.metrics import f1_score
 import scipy
 
-from text_embedder import TextTokenizer, TextEmbedder
-import utils as utils
-from utils import Corpus, TCorpus
-from text_tokenizer_embedder import TextTokenizerEmbedder
+from compcor.text_embedder import TextTokenizer, TextEmbedder
+import compcor.utils as utils
+from compcor.utils import Corpus, TCorpus
+from compcor.text_tokenizer_embedder import TextTokenizerEmbedder
 
 
 def ttest_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = TextTokenizerEmbedder()):

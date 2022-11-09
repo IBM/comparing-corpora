@@ -1,9 +1,7 @@
-__author__ = 'gkour'
 
-import time
 from typing import List
 
-from text_embedder import TextEmbedder, TextTokenizer
+from compcor.text_embedder import TextEmbedder, TextTokenizer
 from sentence_transformers import SentenceTransformer
 from sklearn import preprocessing
 
