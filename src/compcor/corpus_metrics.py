@@ -41,8 +41,8 @@ def IRPR_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = TextTo
 
 
 def classifier_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = TextTokenizerEmbedder()):
+	# distance between corpora is the F1 score of a classifier trained to classify membership of a random sample of each
 	embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
-	# calculate mean and covariance statistics
 
 	corpus1_vecs = embeddings1
 	corpus1_train_indx = random.sample(range(len(embeddings1)), k=int(0.8 * len(embeddings1)))
@@ -86,7 +86,8 @@ def medoid_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = Text
 
 def fid_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = TextTokenizerEmbedder()):
 	embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
-
+	# TODO: needs a note explaining what the resulting calculation is.  Is it an overlap/probability as approximated by Gaussian curve
+	# Note that the paper says FID is a F1 score but this is a different calculation (unless it is in effect an F1 score)
 	if len(embeddings1) == 0 or len(embeddings2) == 0:
 		return 0
 	act1 = np.vstack(embeddings1)
@@ -141,7 +142,8 @@ def dc_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = TextToke
 
 def chi_square_distance(corpus1: TCorpus, corpus2: TCorpus, tokenizer: TextTokenizer = TextTokenizerEmbedder(),
 						top=5000):
-
+	# calculate p-value of chi-square test between frequency counts of top most frequent shared tokens between corpora
+	# note, does not normalize for the size of the corpora, so most common tokens may reflect more the larger corpus
 	tokens1, tokens2 = utils.get_corpora_tokens(corpus1, corpus2, tokenizer)
 
 	if type(tokens1[0]) is list:
@@ -173,7 +175,7 @@ def chi_square_distance(corpus1: TCorpus, corpus2: TCorpus, tokenizer: TextToken
 
 def zipf_distance(corpus1: TCorpus, corpus2: TCorpus, tokenizer: TextTokenizer = TextTokenizerEmbedder()):
 	tokens1, tokens2 = utils.get_corpora_embeddings(corpus1, corpus2, tokenizer)
-
+	
 	zipf1 = utils.zipf_coeff(tokens1)
 	zipf2 = utils.zipf_coeff(tokens2)
 	return np.abs(zipf2 - zipf1)
