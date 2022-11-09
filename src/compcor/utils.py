@@ -8,7 +8,11 @@ Corpus = Union[List[str], List[List[float]]]
 TCorpus = Union[List[str], List[List[str]]]
 
 
-def get_corpora_embeddings(corpus1, corpus2, model):
+def get_corpora_embeddings(corpus1: Corpus, corpus2: Corpus, model):
+    '''
+	Returns token embedding of corpus1 and corpus2, if they are corpora of strings,
+	or returns themselves, if they are already embedded (i.e., in float form)
+    '''
     if isinstance(corpus1[0], str):
         embeddings1 = model.embed_sentences(corpus1)
     else:
