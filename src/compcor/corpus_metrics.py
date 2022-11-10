@@ -170,7 +170,7 @@ def chi_square_distance(corpus1: TCorpus, corpus2: TCorpus, tokenizer: TextToken
 
 	# low p value means two corpora are different.
 	chi_stat = chisquare(f_exp=e1, f_obs=o1)[0] + chisquare(f_exp=e2, f_obs=o2)[0]
-	return scipy.stats.chi2.cdf(chi_stat, 2 * (len(common_words) - 1))
+	return 1-scipy.stats.chi2.cdf(chi_stat, 2 * (len(common_words) - 1))
 
 
 def zipf_distance(corpus1: TCorpus, corpus2: TCorpus, tokenizer: TextTokenizer = TextTokenizerEmbedder()):
