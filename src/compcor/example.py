@@ -66,7 +66,7 @@ distance = corpus_metrics.dc_distance(corpus1=embeddingA, corpus2=embeddingB)
 print("dc_distance={}".format(distance))
 
 distance = corpus_metrics.pr_distance(corpus1=embeddingA, corpus2=embeddingB)
-print("distance={}".format(distance))
+print("pr_distance={}".format(distance))
 
 distance = corpus_metrics.mauve_distance(corpus1=embeddingA, corpus2=embeddingB)
 print("mauve_distance={}".format(distance))
@@ -75,7 +75,7 @@ distance = corpus_metrics.medoid_distance(corpus1=embeddingA, corpus2=embeddingB
 print("medoid_distance={}".format(distance))
 
 distance = corpus_metrics.ttest_distance(corpus1=embeddingA, corpus2=embeddingB)
-print("distance={}".format(distance))
+print("ttest_distance={}".format(distance))
 
 embedder = TextTokenizerEmbedder()
 tokensA = embedder.tokenize_sentences(setA)
