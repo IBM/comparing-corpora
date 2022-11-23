@@ -40,8 +40,8 @@ The first metrics operate on a sentence-level embedding, while the last two oper
 
 |Name|function|level|description|
 |---|---|---|---|
-|T-test|`ttest_distance`|sentence||
-|Medoid|`medoid_distance`|sentence||
+|T-test|`ttest_distance`|sentence|T-test p-value on difference in elementwise means|
+|Medoid|`medoid_distance`|sentence|Cosine distance between elementwise means|
 |Classifier|`classifier_distance`|sentence|Classifiability between reference and target|
 |PR (recision and recall)|`PR_distance`|sentence|Assessing distributional precision and recall|
 |IRPR (information-retrieval precision and recall)|`IRPR_distance`|sentence|Average distance between closest samples pairs|
