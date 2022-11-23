@@ -174,7 +174,7 @@ def chi_square_distance(corpus1: TCorpus, corpus2: TCorpus, tokenizer: TextToken
 
 
 def zipf_distance(corpus1: TCorpus, corpus2: TCorpus, tokenizer: TextTokenizer = TextTokenizerEmbedder()):
-	tokens1, tokens2 = utils.get_corpora_embeddings(corpus1, corpus2, tokenizer)
+	tokens1, tokens2 = utils.get_corpora_tokens(corpus1, corpus2, tokenizer)
 	
 	zipf1 = utils.zipf_coeff(tokens1)
 	zipf2 = utils.zipf_coeff(tokens2)
