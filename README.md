@@ -1,6 +1,7 @@
 # compcor
-A python library of similarity measures which allow measuring the perceptual distance between text corpora.
 
+## TL;DR
+A python library of similarity measures which allow measuring the perceptual distance between text corpora.
 You can use compcor to easily calculate the perceptual distance between two sets of sentences using many classical and SOTA metrics. 
 
 ## About
@@ -9,6 +10,12 @@ While one can reasonably measure the semantic distance between two individual se
 Corpus-level metrics seek to assess semantic similarity at the group level.
 Such metrics are essential for measuring how well corpus-based linguistic analysis generalizes from one data-set to another.
 Specifically, the recent advances in generative language models have led to an increased interest in the study of content similarity between human and generated language, as a mean for comparing the quality of generative models.
+
+## installation:
+Using python>=3.8:
+```
+pip install compcor
+```
 
 ## Usage
 To calculate the perceptual distance between two corpora, the raw corpora can be simply provided as a list of strings:
@@ -63,16 +70,16 @@ The first metrics operate on a sentence-level embedding, while the last two oper
 
 | Name                                              |function| representation | description                                      |
 |---------------------------------------------------|---|----------------|--------------------------------------------------|
-| t-test                                            |`ttest_distance`| embbeding      | T-test p-value on difference in elementwise means |
-| Medoid                                            |`medoid_distance`| embbeding      | Cosine distance between corpora centroids        |
 | Classifier                                        |`classifier_distance`| embbeding      | Classifiability between reference and target     |
-| PR (precision and recall)                         |`PR_distance`| embbeding      | Assessing distributional precision and recall    |
+| [PR (precision and recall)](https://github.com/clovaai/generative-evaluation-prdc)                         |`PR_distance`| embbeding      | Assessing distributional precision and recall    |
 | IRPR (information-retrieval precision and recall) |`IRPR_distance`| embbeding      | Average distance between closest samples pairs   |
-| DC (density and coverage)                         |`dc_distance`| embbeding      | Estimating manifolds density and coverage        |
-| MAUVE                                             |`mauve_distance`| embbeding      | Quality and diversity via divergence frontiers   |
+| [DC (density and coverage)](https://github.com/clovaai/generative-evaluation-prdc)                         |`dc_distance`| embbeding      | Estimating manifolds density and coverage        |
+| [MAUVE](https://github.com/krishnap25/mauve)                                             |`mauve_distance`| embbeding      | Quality and diversity via divergence frontiers   |
 | FID (Frechet Inception Distance)                  |`fid_distance`| embbeding      | Wasserstein distance between densities           |
 | Chi-squared ($\chi^2$)                            |`chi_square_distance`| token          | Word/Token count comparison                      |
 | Zipf                                              |`zipf_distance`| token          | Unigram rank-frequency statistics                |
+| t-test                                            |`ttest_distance`| embbeding      | T-test p-value on difference in elementwise means |
+| Medoid                                            |`medoid_distance`| embbeding      | Cosine distance between corpora centroids        |
 
 ## Citation
 If you use this package for your scientific publication please cite the following work studies the quality, time 
