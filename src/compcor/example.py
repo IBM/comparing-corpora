@@ -1,5 +1,5 @@
 import compcor.corpus_metrics as corpus_metrics
-from compcor.text_tokenizer_embedder import TextTokenizerEmbedder
+from compcor.text_tokenizer_embedder import STTokenizerEmbedder
 
 ### Example code
 
@@ -55,7 +55,9 @@ print("chi_square_distance={}".format(distance))
 distance = corpus_metrics.zipf_distance(corpus1=setA, corpus2=setB)
 print("zipf_distance={}".format(distance))
 
-embedder = TextTokenizerEmbedder()
+print("Comparing corpora on embedding data...")
+
+embedder = STTokenizerEmbedder(embedding_model_name="all-MiniLM-L12-v2")
 embeddingA = embedder.embed_sentences(setA)
 embeddingB = embedder.embed_sentences(setB)
 
@@ -77,7 +79,9 @@ print("medoid_distance={}".format(distance))
 distance = corpus_metrics.ttest_distance(corpus1=embeddingA, corpus2=embeddingB)
 print("ttest_distance={}".format(distance))
 
-embedder = TextTokenizerEmbedder()
+
+
+embedder = STTokenizerEmbedder()
 tokensA = embedder.tokenize_sentences(setA)
 tokensB = embedder.tokenize_sentences(setB)
 

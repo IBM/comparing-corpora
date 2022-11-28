@@ -6,7 +6,7 @@ from sentence_transformers import SentenceTransformer
 from sklearn import preprocessing
 
 
-class TextTokenizerEmbedder(TextEmbedder, TextTokenizer):
+class STTokenizerEmbedder(TextEmbedder, TextTokenizer):
     def __init__(self, embedding_model_name="all-MiniLM-L6-v2"):
         self.model_name = embedding_model_name
         self.embedder: SentenceTransformer = None

@@ -17,10 +17,10 @@ import scipy
 from compcor.text_embedder import TextTokenizer, TextEmbedder
 import compcor.utils as utils
 from compcor.utils import Corpus, TCorpus
-from compcor.text_tokenizer_embedder import TextTokenizerEmbedder
+from compcor.text_tokenizer_embedder import STTokenizerEmbedder
 
 
-def ttest_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = TextTokenizerEmbedder()):
+def ttest_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder()):
 	# calculate mean and covariance statistics
 
 	embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
@@ -29,7 +29,7 @@ def ttest_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = TextT
 	return 1 - np.nanmean(res.pvalue)
 
 
-def IRPR_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = TextTokenizerEmbedder()):
+def IRPR_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder()):
 	embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
 
 	cosine = np.clip(cosine_similarity(embeddings1, embeddings2), -1, 1)
@@ -40,7 +40,7 @@ def IRPR_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = TextTo
 	return 2 * (precision * recall) / (precision + recall)
 
 
-def classifier_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = TextTokenizerEmbedder()):
+def classifier_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder()):
 	# distance between corpora is the F1 score of a classifier trained to classify membership of a random sample of each
 	embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
 
@@ -71,7 +71,7 @@ def classifier_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = 
 	return correct
 
 
-def medoid_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = TextTokenizerEmbedder()):
+def medoid_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder()):
 	embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
 
 	# calculate mean and covariance statistics
@@ -84,7 +84,7 @@ def medoid_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = Text
 	return cosine
 
 
-def fid_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = TextTokenizerEmbedder()):
+def fid_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder()):
 	embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
 	# TODO: needs a note explaining what the resulting calculation is.  Is it an overlap/probability as approximated by Gaussian curve
 	# Note that the paper says FID is a F1 score but this is a different calculation (unless it is in effect an F1 score)
@@ -108,14 +108,14 @@ def fid_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = TextTok
 	return fid
 
 
-def mauve_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = TextTokenizerEmbedder()):
+def mauve_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder()):
 	embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
 
 	out = mauve.compute_mauve(p_features=embeddings1, q_features=embeddings2, device_id=0, verbose=False)
 	return 1 - out.mauve
 
 
-def pr_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = TextTokenizerEmbedder(), nearest_k=5):
+def pr_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder(), nearest_k=5):
 	embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
 
 	metric = compute_prdc(real_features=np.vstack(embeddings1),
@@ -127,7 +127,7 @@ def pr_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = TextToke
 	return 1 - 2 * (precision * recall) / (precision + recall)
 
 
-def dc_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = TextTokenizerEmbedder(), nearest_k=5):
+def dc_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder(), nearest_k=5):
 	embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
 
 	metric = compute_prdc(real_features=np.vstack(embeddings1),
@@ -140,7 +140,7 @@ def dc_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = TextToke
 	return 1 - 2 * (density * coverage) / (density + coverage)
 
 
-def chi_square_distance(corpus1: TCorpus, corpus2: TCorpus, tokenizer: TextTokenizer = TextTokenizerEmbedder(),
+def chi_square_distance(corpus1: TCorpus, corpus2: TCorpus, tokenizer: TextTokenizer = STTokenizerEmbedder(),
 						top=5000):
 	# calculate p-value of chi-square test between frequency counts of top most frequent shared tokens between corpora
 	# note, does not normalize for the size of the corpora, so most common tokens may reflect more the larger corpus
@@ -173,7 +173,7 @@ def chi_square_distance(corpus1: TCorpus, corpus2: TCorpus, tokenizer: TextToken
 	return 1-scipy.stats.chi2.cdf(chi_stat, 2 * (len(common_words) - 1))
 
 
-def zipf_distance(corpus1: TCorpus, corpus2: TCorpus, tokenizer: TextTokenizer = TextTokenizerEmbedder()):
+def zipf_distance(corpus1: TCorpus, corpus2: TCorpus, tokenizer: TextTokenizer = STTokenizerEmbedder()):
 	tokens1, tokens2 = utils.get_corpora_tokens(corpus1, corpus2, tokenizer)
 	
 	zipf1 = utils.zipf_coeff(tokens1)
