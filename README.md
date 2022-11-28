@@ -1,4 +1,4 @@
-# comparing-corpora
+# compcor 
 A python library of similarity measures which allow measuring the perceptual similarity between set embeddings corpora.
 
 # Calculating distances between two text corpora

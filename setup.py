@@ -27,7 +27,7 @@ with pathlib.Path('requirements.txt').open() as requirements_txt:
     ]
 
 setup(name='compcor',
-      version='1.0.2',
+      version='1.0.5',
       description='Corpus level similarity measures.',
       long_description=open("README.md").read(),
       long_description_content_type="text/markdown",
@@ -44,5 +44,6 @@ setup(name='compcor',
       classifiers=[
           "Programming Language :: Python :: 3",
           "Operating System :: OS Independent"
-      ]
+      ],
+      license='Apache Software License, Version 2.0, http://www.apache.org/licenses/LICENSE-2.0'
       )
