@@ -3,14 +3,14 @@ A python library of similarity measures which allow measuring the perceptual dis
 
 You can use compcor to easily calculate the perceptual distance between two sets of sentences using many classical and SOTA metrics. 
 
-# About
+## About
 The ability to compare the semantic similarity between text corpora is important in a variety of natural language processing applications.
 While one can reasonably measure the semantic distance between two individual sentences (e.g., by calculating the cosine distance between the sentence embeddings), measuring the dissimilarity between two text corpora remains a challenge.
 Corpus-level metrics seek to assess semantic similarity at the group level.
 Such metrics are essential for measuring how well corpus-based linguistic analysis generalizes from one data-set to another.
 Specifically, the recent advances in generative language models have led to an increased interest in the study of content similarity between human and generated language, as a mean for comparing the quality of generative models.
 
-# Usage
+## Usage
 To calculate the perceptual distance between two corpora, the raw corpora can be simply provided as a list of strings:
 ```
 setA = ['can you tell me how i would normally say thank you as a french person', 'can you translate hi into spanish for me', 'can you translate milk into spanish for me', 'how can i say thank you very much in chinese', 'how can i thank somebody in italian', 'how could i say twin in chinese', 'how do germans say goodnight','how do i ask about the weather in chinese', 'how do i say hotel in finnish', 'how do i say bathroom in italian']
@@ -56,7 +56,7 @@ distance = corpus_metrics.chi_square_distance(corpus1=tokensA, corpus2=tokensB)
 print("chi_square_distance={}".format(distance))
 #chi_square_distance=0.9987177546738071
 ```
-# Full Metric list
+## Full Metric list
 Given two corpora of strings, we want to calculate the distance between them.
 `comparing-corpora` provides the following distance metrics.
 The first metrics operate on a sentence-level embedding, while the last two operate on the token frequencies.
@@ -74,8 +74,9 @@ The first metrics operate on a sentence-level embedding, while the last two oper
 | Chi-squared ($\chi^2$)                            |`chi_square_distance`| token          | Word/Token count comparison                      |
 | Zipf                                              |`zipf_distance`| token          | Unigram rank-frequency statistics                |
 
-## Performance and Citation
-The quality, time performance and other properties these metrics are studied in the following paper.
+## Citation
+If you use this package for your scientific publication please cite the following work studies the quality, time 
+performance and other properties of most of the metrics in this package.
 ```
 @inproceedings{kour2022measuring,
   title={Measuring the Measuring Tools: An Automatic Evaluation of Semantic Metrics for Text Corpora},
@@ -85,4 +86,3 @@ The quality, time performance and other properties these metrics are studied in 
   year={2022}
 }
 ```
-If you use this package for your scientific publication please cite it.
