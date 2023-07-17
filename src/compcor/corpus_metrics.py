@@ -19,22 +19,56 @@ import compcor.utils as utils
 from compcor.utils import Corpus, TCorpus
 from compcor.text_tokenizer_embedder import STTokenizerEmbedder
 
+# threshold below which to match distances to 0
+ZERO_THRESH = 0.005
+
+def cosine_arccos_transform(c1, c2=None):
+	# c1 and c2 are lists of input arrays
+
+	def process(input):
+		if input is not None:
+			if isinstance(input, list) or isinstance(input, tuple):
+				return np.vstack(input)
+			else:
+				if isinstance(input, np.ndarray):
+					if len(input.shape) == 1:
+						# make it have one row
+						return input.reshape(1,-1)
+					else:
+						return input
+		else:
+			return input
+
+	c1, c2 = process(c1), process(c2)
+
+	cosine = np.arccos(np.clip(cosine_similarity(X=c1, Y=c2), -1,1)) / np.pi # if None will be X with itself
+	# due to numeric precision, sometimes cosine distance between identical vectors is not 0 exactly
+
+	cosine[ cosine <= ZERO_THRESH] = 0.0
+
+	return cosine
+
+
 
 def ttest_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder()):
 	# calculate mean and covariance statistics
-
-	embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
+	if model is not None:
+		# if you just provide the matrices themselves
+		embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
+	else:
+		embeddings1, embeddings2 = corpus1, corpus2
 
 	res = ttest_ind(embeddings1, embeddings2)
 	return 1 - np.nanmean(res.pvalue)
 
 
 def IRPR_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder()):
-	embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
+	if model is not None:
+		embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
+	else:
+		embeddings1, embeddings2 = corpus1, corpus2
 
-	cosine = np.clip(cosine_similarity(embeddings1, embeddings2), -1, 1)
-	# this is because sometimes cosine_similarity return values larger than 1
-	table = np.arccos(cosine) / np.pi
+	table = cosine_arccos_transform(c1=embeddings1, c2=embeddings2)
 	precision = np.nansum(np.nanmin(table, axis=1)) / table.shape[1]
 	recall = np.nansum(np.nanmin(table, axis=0)) / table.shape[0]
 	return 2 * (precision * recall) / (precision + recall)
@@ -42,7 +76,10 @@ def IRPR_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STToke
 
 def classifier_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder()):
 	# distance between corpora is the F1 score of a classifier trained to classify membership of a random sample of each
-	embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
+	if model is not None:
+		embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
+	else:
+		embeddings1, embeddings2 = corpus1, corpus2
 
 	corpus1_vecs = embeddings1
 	corpus1_train_indx = random.sample(range(len(embeddings1)), k=int(0.8 * len(embeddings1)))
@@ -62,17 +99,20 @@ def classifier_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = 
 	train_y = [0] * len(corpus1_train) + [1] * len(corpus2_train)
 	test_x = corpus1_test + corpus2_test
 	test_y = [0] * len(corpus1_test) + [1] * len(corpus2_test)
-	model = svm.SVC(random_state=1)
-	model.fit(train_x, train_y)
+	clf = svm.SVC(random_state=1)
+	clf.fit(train_x, train_y)
 
-	y_pred = model.predict(test_x)
+	y_pred = clf.predict(test_x)
 	correct = f1_score(test_y, y_pred)
 
 	return correct
 
 
 def medoid_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder()):
-	embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
+	if model is not None:
+		embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
+	else:
+		embeddings1, embeddings2 = corpus1, corpus2
 
 	# calculate mean and covariance statistics
 	act1 = np.vstack(embeddings1)
@@ -85,7 +125,10 @@ def medoid_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTo
 
 
 def fid_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder()):
-	embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
+	if model is not None:
+		embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
+	else:
+		embeddings1, embeddings2 = corpus1, corpus2
 	# TODO: needs a note explaining what the resulting calculation is.  Is it an overlap/probability as approximated by Gaussian curve
 	# Note that the paper says FID is a F1 score but this is a different calculation (unless it is in effect an F1 score)
 	if len(embeddings1) == 0 or len(embeddings2) == 0:
@@ -109,14 +152,20 @@ def fid_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STToken
 
 
 def mauve_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder()):
-	embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
+	if model is not None:
+		embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
+	else:
+		embeddings1, embeddings2 = corpus1, corpus2
 
 	out = mauve.compute_mauve(p_features=embeddings1, q_features=embeddings2, device_id=0, verbose=False)
 	return 1 - out.mauve
 
 
 def pr_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder(), nearest_k=5):
-	embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
+	if model is not None:
+		embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
+	else:
+		embeddings1, embeddings2 = corpus1, corpus2
 
 	metric = compute_prdc(real_features=np.vstack(embeddings1),
 						  fake_features=np.vstack(embeddings2),
@@ -128,7 +177,10 @@ def pr_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokeni
 
 
 def dc_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder(), nearest_k=5):
-	embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
+	if model is not None:
+		embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
+	else:
+		embeddings1, embeddings2 = corpus1, corpus2
 
 	metric = compute_prdc(real_features=np.vstack(embeddings1),
 						  fake_features=np.vstack(embeddings2),
@@ -179,3 +231,37 @@ def zipf_distance(corpus1: TCorpus, corpus2: TCorpus, tokenizer: TextTokenizer =
 	zipf1 = utils.zipf_coeff(tokens1)
 	zipf2 = utils.zipf_coeff(tokens2)
 	return np.abs(zipf2 - zipf1)
+
+
+def Directed_Hausdorff_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder()):
+	# calculate nearest distance from each element in one corpus to an element in the other
+	# like IRPR except take mean not harmonic mean (F1-score)
+	if model is not None:
+		embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
+	else:
+		embeddings1, embeddings2 = corpus1, corpus2
+
+	table = cosine_arccos_transform(c1=embeddings1, c2=embeddings2)
+	nearest_1to2 = np.nanmin(table, axis=1) # nearest in c2 from each in c1, min in each row
+	nearest_2to1 = np.nanmin(table, axis=0)  # nearest in c1 from each in c2, min in each column
+
+	return np.mean([nearest_1to2.mean(), nearest_2to1.mean()])
+
+
+def Energy_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder(), normalize=False):
+	# https://en.wikipedia.org/wiki/Energy_distance
+	if model is not None:
+		embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
+	else:
+		embeddings1, embeddings2 = corpus1, corpus2
+
+	between = cosine_arccos_transform(c1=embeddings1, c2=embeddings2)
+	within1 = cosine_arccos_transform(c1=embeddings1)
+	within2 = cosine_arccos_transform(c1=embeddings2)
+	A2 = 2 * between.mean()
+	B = within1.mean()
+	C = within2.mean()
+
+	edist = A2 - B - C
+	#  E-coefficient of inhomogeneity is between 0 and 1
+	return edist/A2 if normalize else np.sqrt(edist)
