@@ -1,9 +1,11 @@
 import random
-from collections import Counter
+import statsmodels.stats.multitest
+from collections import Counter, namedtuple
 from operator import itemgetter
 
 import numpy as np
 from prdc import compute_prdc
+import prdc.prdc as pr
 import mauve
 
 from scipy.linalg import sqrtm
@@ -21,6 +23,10 @@ from compcor.text_tokenizer_embedder import STTokenizerEmbedder
 
 # threshold below which to match distances to 0
 ZERO_THRESH = 0.005
+
+PR = namedtuple('pr', 'precision recall distance')
+DC = namedtuple('dc', 'density coverage distance')
+
 
 def cosine_arccos_transform(c1, c2=None):
 	# c1 and c2 are lists of input arrays
@@ -62,7 +68,7 @@ def ttest_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTok
 	return 1 - np.nanmean(res.pvalue)
 
 
-def IRPR_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder()):
+def IRPR_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder(), components=False):
 	if model is not None:
 		embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
 	else:
@@ -71,7 +77,9 @@ def IRPR_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STToke
 	table = cosine_arccos_transform(c1=embeddings1, c2=embeddings2)
 	precision = np.nansum(np.nanmin(table, axis=1)) / table.shape[1]
 	recall = np.nansum(np.nanmin(table, axis=0)) / table.shape[0]
-	return 2 * (precision * recall) / (precision + recall)
+	distance = 2 * (precision * recall) / (precision + recall)
+
+	return PR(precision, recall, distance) if components else distance
 
 
 def classifier_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder()):
@@ -123,6 +131,20 @@ def medoid_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTo
 	cosine = spatial.distance.cosine(mu1, mu2)
 	return cosine
 
+def median_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder()):
+	if model is not None:
+		embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
+	else:
+		embeddings1, embeddings2 = corpus1, corpus2
+
+	# calculate mean and covariance statistics
+	act1 = np.vstack(embeddings1)
+	act2 = np.vstack(embeddings2)
+	mu1 = np.median(act1, axis=0)
+	mu2 = np.median(act2, axis=0)
+	# calculate sum squared difference between medians
+	cosine = spatial.distance.cosine(mu1, mu2)
+	return cosine
 
 def fid_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder()):
 	if model is not None:
@@ -140,7 +162,8 @@ def fid_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STToken
 	mu2 = np.mean(act2, axis=0)
 	sigma2 = np.cov(act2, rowvar=False)
 	# calculate sum squared difference between means
-	ssdiff = np.sum((mu1 - mu2) ** 2.0)
+	# ssdiff = np.sum((mu1 - mu2) ** 2.0)
+	ssdiff = np.square(mu1 - mu2).sum()
 	# calculate sqrt of product between cov
 	covmean = sqrtm(sigma1.dot(sigma2))
 	# check and correct imaginary numbers from sqrt
@@ -161,35 +184,39 @@ def mauve_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTok
 	return 1 - out.mauve
 
 
-def pr_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder(), nearest_k=5):
+def pr_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder(), nearest_k=5, cosine=False, components=False):
 	if model is not None:
 		embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
 	else:
 		embeddings1, embeddings2 = corpus1, corpus2
 
-	metric = compute_prdc(real_features=np.vstack(embeddings1),
-						  fake_features=np.vstack(embeddings2),
-						  nearest_k=nearest_k)
+	f = compute_prdc_cosine if cosine else compute_prdc
+
+	metric = f(real_features=np.vstack(embeddings1),
+			   fake_features=np.vstack(embeddings2),
+			   nearest_k=nearest_k)
 	precision = np.clip(metric['precision'], 0, 1)
 	recall = np.clip(metric['recall'] + 1e-6, 0, 1)
+	distance = 1 - 2 * (precision * recall) / (precision + recall)
 
-	return 1 - 2 * (precision * recall) / (precision + recall)
+	return PR(precision, recall, distance) if components else distance
 
-
-def dc_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder(), nearest_k=5):
+def dc_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTokenizerEmbedder(), nearest_k=5, cosine=False, components=False):
 	if model is not None:
 		embeddings1, embeddings2 = utils.get_corpora_embeddings(corpus1, corpus2, model)
 	else:
 		embeddings1, embeddings2 = corpus1, corpus2
 
-	metric = compute_prdc(real_features=np.vstack(embeddings1),
-						  fake_features=np.vstack(embeddings2),
-						  nearest_k=nearest_k)
+	f = compute_prdc_cosine if cosine else compute_prdc
+
+	metric = f(real_features=np.vstack(embeddings1),
+			   fake_features=np.vstack(embeddings2),
+			   nearest_k=nearest_k)
 
 	density = np.clip(metric['density'], 0, 1)
 	coverage = np.clip(metric['coverage'] + 1e-6, 0, 1)
-
-	return 1 - 2 * (density * coverage) / (density + coverage)
+	distance = 1 - 2 * (density * coverage) / (density + coverage)
+	return DC(density, coverage, distance) if components else distance
 
 
 def chi_square_distance(corpus1: TCorpus, corpus2: TCorpus, tokenizer: TextTokenizer = STTokenizerEmbedder(),
@@ -265,3 +292,59 @@ def Energy_distance(corpus1: Corpus, corpus2: Corpus, model: TextEmbedder = STTo
 	edist = A2 - B - C
 	#  E-coefficient of inhomogeneity is between 0 and 1
 	return edist/A2 if normalize else np.sqrt(edist)
+
+
+def compute_nearest_neighbour_distances_cosine(real_features, nearest_k):
+	d = cosine_arccos_transform(c1=real_features) # self distance
+	return pr.get_kth_value(d, k=nearest_k + 1, axis=-1)
+
+def compute_prdc_cosine(real_features, fake_features, nearest_k):
+	"""
+    Computes precision, recall, density, and coverage given two manifolds.
+
+    Args:
+        real_features: numpy.ndarray([N, feature_dim], dtype=np.float32)
+        fake_features: numpy.ndarray([N, feature_dim], dtype=np.float32)
+        nearest_k: int.
+    Returns:
+        dict of precision, recall, density, and coverage.
+    """
+
+	print('Num real: {} Num fake: {}'
+          .format(real_features.shape[0], fake_features.shape[0]))
+
+	real_nearest_neighbour_distances = compute_nearest_neighbour_distances_cosine(
+        real_features, nearest_k)
+	fake_nearest_neighbour_distances = compute_nearest_neighbour_distances_cosine(
+        fake_features, nearest_k)
+	distance_real_fake = cosine_arccos_transform(c1=real_features, c2=fake_features)
+
+	# precision and recall = are fraction of internal sample distances (interchangeable for our purposes)
+	# that are smaller than the distance to each kth nearest neighbor in the other sample
+	# each column of the matrix is the probability that elementise, a column in distance_real_fake < real_nearest_neighbour_distances
+	# precision looks at probability, for each element in -B, that it is closer to each element of A than that element a's kth NN in B,
+	# (i.e whether it is contained in each element of A's NN radius
+	# looks if any of these are True, then takes the mean
+	# i.e. the share of elements in B that would be hit by the kth NN radius of an element in A.
+	precision = (
+            distance_real_fake <
+            np.expand_dims(real_nearest_neighbour_distances, axis=1)
+    ).any(axis=0).mean()
+
+	recall = (
+            distance_real_fake <
+            np.expand_dims(fake_nearest_neighbour_distances, axis=0)
+    ).any(axis=1).mean()
+
+	density = (1. / float(nearest_k)) * (
+            distance_real_fake <
+            np.expand_dims(real_nearest_neighbour_distances, axis=1)
+    ).sum(axis=0).mean()
+
+	coverage = (
+            distance_real_fake.min(axis=1) <
+            real_nearest_neighbour_distances
+    ).mean()
+
+	return dict(precision=precision, recall=recall,
+                density=density, coverage=coverage)
